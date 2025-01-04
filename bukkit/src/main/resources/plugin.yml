@@ -1,0 +1,7 @@
+name: BurningDaylight
+version: '${version}'
+main: io.github.artificial720.burningDaylight.BurningDaylight
+api-version: '${minecraft_version}'
+load: STARTUP
+author: '${author}'
+description: '${description}'

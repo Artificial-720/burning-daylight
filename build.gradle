@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = "${group}"
+    version = "${version}"
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "papermc-repo"
+            url = "https://repo.papermc.io/repository/maven-public/"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/groups/public/"
+        }
+    }
+}
+
+subprojects {
+    tasks.withType(Jar).tap {
+        configureEach {
+            archiveBaseName.set("${rootProject.name}-${project.name}")
+        }
+    }
+}
