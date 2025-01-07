@@ -1,33 +1,42 @@
 package io.github.artificial720.burningDaylight;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public final class BurningDaylight extends JavaPlugin implements Listener {
-    private static final Map<Player, Integer> affectedPlayers = new HashMap<>();
     private static final int PERIOD = 20; // 20 ticks = 1 second
-    private static final int DURATION_TICKS = 100;
-    private static final double BURN_DAMAGE_AMOUNT = 2.0;
+    private static final Map<Player, Integer> affectedPlayers = new HashMap<>();
+    private final Set<UUID> playerGracePeriod = new HashSet<>();
+    private int gracePeriodDuration; // in seconds
+    private int effectDurationTicks; // in ticks
+    private double burnDamageDay;
+    private double burnDamageNight;
+    private double burnDamageDayWithLeatherArmor;
+    private double burnDamageNightWithLeatherArmor;
 
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        loadConfigValues();
 
         getServer().getPluginManager().registerEvents(this, this);
 
@@ -69,6 +78,54 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        UUID playerID = player.getUniqueId();
+        OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(playerID);
+
+        Component component = MiniMessage.miniMessage().deserialize("""
+                <gold><bold>Welcome to Burning Daylight!</bold></gold>
+                
+                <white><bold>Core Mechanics:</bold></white>
+                <red>  - Sunburn Damage:</red> <white>Direct sunlight will damage you, so stay in the shade or underground!</white>
+                <blue>  - Nighttime Safety:</blue> <white>You'll take less damage at night, so use it to your advantage.</white>
+                <dark_aqua>  - Weather Protection:</dark_aqua> <white>Rainy or stormy weather also reduces sunlight damage—watch the skies!</white>
+                <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>""");
+        player.sendMessage(component);
+
+        if (!offlinePlayer.hasPlayedBefore()) {
+            player.sendMessage("Welcome to the server for the first time!");
+            player.sendMessage(ChatColor.GREEN + "You have " + (gracePeriodDuration / 60) + "-minute grace period where you are immune to sun damage. Good Luck!");
+            playerGracePeriod.add(playerID);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (playerGracePeriod.contains(playerID)) {
+                        playerGracePeriod.remove(playerID);
+                        player.sendMessage(ChatColor.RED + "Your grace period has ended. You can now take damage.");
+                    }
+                }
+            }.runTaskLater(this, 20L * gracePeriodDuration);
+
+        }
+    }
+
+    private void loadConfigValues() {
+        FileConfiguration config = getConfig();
+
+        // Load basic settings
+        gracePeriodDuration = config.getInt("grace_period_duration", 300); // Default: 300 seconds
+        effectDurationTicks = config.getInt("effect_duration_ticks", 100); // Default: 100 ticks
+
+        // Load nested damage settings
+        burnDamageDay = config.getDouble("burn_damage_amounts.day", 2.0); // Default: 2.0
+        burnDamageNight = config.getDouble("burn_damage_amounts.night", 1.0); // Default: 1.0
+        burnDamageDayWithLeatherArmor = config.getDouble("burn_damage_amounts.day_with_leather_armor", 1.0); // Default: 1.0
+        burnDamageNightWithLeatherArmor = config.getDouble("burn_damage_amounts.night_with_leather_armor", 0.0); // Default: 0.0
+    }
+
     public Component getRandomDeathMessage(Player player) {
         String[] deathMessages = {
                 player.getName() + " was scorched by the harsh sunlight!",
@@ -103,7 +160,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         int ticks = affectedPlayers.get(player);
         ticks += PERIOD;
         // stop effect after x ticks
-        if (ticks >= DURATION_TICKS) {
+        if (ticks >= effectDurationTicks) {
             getLogger().info("Its been " + ticks + " ticks removing effect");
             return true;
         }
@@ -128,18 +185,24 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         // Full armor = half damage
         EntityEquipment equipment = player.getEquipment();
         ItemStack helmet = equipment.getHelmet();
-        ItemStack chestplate = equipment.getChestplate();
+        ItemStack chestPlate = equipment.getChestplate();
         ItemStack leggings = equipment.getLeggings();
         ItemStack boots = equipment.getBoots();
 
         // Check if all armor items are not null and are made of leather
-        if (helmet != null && chestplate != null && leggings != null && boots != null &&
+        if (helmet != null && chestPlate != null && leggings != null && boots != null &&
                 helmet.getType() == Material.LEATHER_HELMET &&
-                chestplate.getType() == Material.LEATHER_CHESTPLATE &&
+                chestPlate.getType() == Material.LEATHER_CHESTPLATE &&
                 leggings.getType() == Material.LEATHER_LEGGINGS &&
                 boots.getType() == Material.LEATHER_BOOTS) {
             getLogger().info("Wherein full leather armor half damage");
             wearingLeather = true;
+
+            // damage the armor
+            damageArmor(helmet, 1);
+            damageArmor(chestPlate, 1);
+            damageArmor(leggings, 1);
+            damageArmor(boots, 1);
         }
 
         // 2 damage during day
@@ -153,26 +216,43 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         if (wearingLeather) {
             if (isDay) {
                 if (hasWeather) {
-                    return 0.0;
+                    return burnDamageNightWithLeatherArmor;
                 }
-                return 1.0;
+                return burnDamageDayWithLeatherArmor;
             } else {
-                return 0.0;
+                return burnDamageNightWithLeatherArmor;
             }
         }
         if (isDay) {
             if (hasWeather) {
-                return 1.0;
+                return burnDamageNight;
             }
-            return 2.0;
+            return burnDamageDay;
         } else {
-            return 1.0;
+            return burnDamageNight;
+        }
+    }
+
+    private void damageArmor(ItemStack armor, int damage) {
+        ItemMeta meta = armor.getItemMeta();
+        if (meta instanceof Damageable damageable) {
+            int currentDamage = damageable.getDamage();
+            int newDamage = currentDamage + damage;
+
+            if (newDamage >= armor.getType().getMaxDurability()) {
+                armor.setAmount(0); // Break armor
+            } else {
+                // set new durability
+                damageable.setDamage(newDamage);
+                armor.setItemMeta(meta);
+            }
         }
     }
 
     private boolean isBurnConditionMet(Player player) {
         if (player.isDead()) return false;
         if (player.getGameMode().compareTo(GameMode.CREATIVE) == 0) return false;
+        if (playerGracePeriod.contains(player.getUniqueId())) return false;
 
         Location location = player.getLocation();
         World world = location.getWorld();
@@ -192,17 +272,9 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         );
         if (rayTraceResult != null) {
             if (rayTraceResult.getHitBlock() != null) {
-                getLogger().info("Raytrace hit a block");
                 return false;
             }
         }
-
-//        for (int y = location.getBlockY() + 1; y <= world.getMaxHeight(); y++) {
-//            if (!location.clone().add(0, y - location.getBlockY(), 0).getBlock().isEmpty()) {
-//                getLogger().info("There is a block above head");
-//                return false;
-//            }
-//        }
 
         return true;
     }

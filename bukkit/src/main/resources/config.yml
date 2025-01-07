@@ -1,4 +1,17 @@
 # Burning Daylight Configuration File
 # Author: Artificial-720
-# For issues or suggestions, please submit them at:
+# For issues or suggestions, please submit them at: https://github.com/Artificial-720/burning-daylight/issues
 
+
+# Grace period duration (in seconds) before certain effects take place
+grace_period_duration: 300
+
+# Duration of effects, specified in ticks (20 ticks = 1 second)
+effect_duration_ticks: 100
+
+# Damage amounts under various conditions (2 damage = 1 heart)
+burn_damage_amounts:
+  day: 2.0        # Damage during the day
+  night: 1.0      # Damage during the night
+  day_with_leather_armor: 1.0 # Damage during the day while wearing leather armor
+  night_with_leather_armor: 0.0 # Damage during the night while wearing leather armor
