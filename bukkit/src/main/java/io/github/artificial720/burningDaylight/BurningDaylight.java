@@ -1,8 +1,10 @@
 package io.github.artificial720.burningDaylight;
 
+import io.github.artificial720.burningDaylight.commands.BurningDaylightCommander;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,6 +39,13 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     public void onEnable() {
         saveDefaultConfig();
         loadConfigValues();
+
+        BurningDaylightCommander commander = new BurningDaylightCommander(this);
+        PluginCommand pluginCommand = getCommand("burn");
+        if (pluginCommand != null) {
+            pluginCommand.setExecutor(commander);
+            pluginCommand.setTabCompleter(commander);
+        }
 
         getServer().getPluginManager().registerEvents(this, this);
 
@@ -126,6 +135,11 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         burnDamageNightWithLeatherArmor = config.getDouble("burn_damage_amounts.night_with_leather_armor", 0.0); // Default: 0.0
     }
 
+    public void reloadConfigValues() {
+        reloadConfig();
+        loadConfigValues();
+    }
+
     public Component getRandomDeathMessage(Player player) {
         String[] deathMessages = {
                 player.getName() + " was scorched by the harsh sunlight!",
@@ -161,7 +175,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         ticks += PERIOD;
         // stop effect after x ticks
         if (ticks >= effectDurationTicks) {
-            getLogger().info("Its been " + ticks + " ticks removing effect");
+            getLogger().info("Its been " + ticks + " ticks removing effect from " + player.getName());
             return true;
         }
         affectedPlayers.put(player, ticks);
@@ -170,7 +184,6 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
     private void applyBurnEffect(Player player) {
         double damage = calculateBurnDamage(player);
-        getLogger().info("Applying damage to player " + damage);
         player.damage(damage);
         player.getWorld().playEffect(player.getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1f);
@@ -195,24 +208,19 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
                 chestPlate.getType() == Material.LEATHER_CHESTPLATE &&
                 leggings.getType() == Material.LEATHER_LEGGINGS &&
                 boots.getType() == Material.LEATHER_BOOTS) {
-            getLogger().info("Wherein full leather armor half damage");
             wearingLeather = true;
 
             // damage the armor
-            damageArmor(helmet, 1);
-            damageArmor(chestPlate, 1);
-            damageArmor(leggings, 1);
-            damageArmor(boots, 1);
+            damageArmor(helmet);
+            damageArmor(chestPlate);
+            damageArmor(leggings);
+            damageArmor(boots);
         }
 
         // 2 damage during day
         // 1 damage during night
         // 1 damage during day with leather armor
         // 0 damage during night with leather armor
-
-        getLogger().info("wearingLeather: " + wearingLeather);
-        getLogger().info("isDay: " + isDay);
-        getLogger().info("hasWeather: " + hasWeather);
         if (wearingLeather) {
             if (isDay) {
                 if (hasWeather) {
@@ -233,11 +241,11 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         }
     }
 
-    private void damageArmor(ItemStack armor, int damage) {
+    private void damageArmor(ItemStack armor) {
         ItemMeta meta = armor.getItemMeta();
         if (meta instanceof Damageable damageable) {
             int currentDamage = damageable.getDamage();
-            int newDamage = currentDamage + damage;
+            int newDamage = currentDamage + 1;
 
             if (newDamage >= armor.getType().getMaxDurability()) {
                 armor.setAmount(0); // Break armor
@@ -258,7 +266,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         World world = location.getWorld();
 
         if (world == null) {
-            getLogger().info("World is null");
+            getLogger().warning("World is null");
             return false;
         }
 
@@ -271,9 +279,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
                 true
         );
         if (rayTraceResult != null) {
-            if (rayTraceResult.getHitBlock() != null) {
-                return false;
-            }
+            return rayTraceResult.getHitBlock() == null;
         }
 
         return true;

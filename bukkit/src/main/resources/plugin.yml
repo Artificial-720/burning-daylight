@@ -5,3 +5,9 @@ api-version: '${minecraft_version}'
 load: STARTUP
 author: '${author}'
 description: '${description}'
+
+commands:
+  burn:
+    description: Configure Burning Daylight.
+    usage: /burn <subcommand>
+    aliases: [burningdaylight]
