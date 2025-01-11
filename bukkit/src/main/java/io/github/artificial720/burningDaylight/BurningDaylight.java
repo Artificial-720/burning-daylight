@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.RayTraceResult;
@@ -30,23 +30,13 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     private static final Map<Player, Integer> affectedPlayers = new HashMap<>();
     private final Map<UUID, BukkitTask> playerGracePeriod = new HashMap<>();
     // config.yml settings
-    private int gracePeriodDuration; // in seconds
-    private int effectDurationTicks; // in ticks
-    private double burnDamageDay;
-    private double burnDamageNight;
-    private double burnDamageDayWithLeatherArmor;
-    private double burnDamageNightWithLeatherArmor;
-    private boolean gracePeriodNotifyPlayer;
-    private boolean applyOnFirstJoin;
-    private boolean applyOnRespawn;
-    private String gracePeriodStartMsg;
-    private String gracePeriodEndMsg;
+    private BurningDaylightConfig config;
 
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        loadConfigValues();
+        config = new BurningDaylightConfig(getConfig());
 
         BurningDaylightCommander commander = new BurningDaylightCommander(this);
         PluginCommand pluginCommand = getCommand("burn");
@@ -97,7 +87,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        if (applyOnRespawn) {
+        if (config.applyOnRespawn) {
             applyGracePeriod(player);
         }
     }
@@ -122,7 +112,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
         if (isFirstJoin){
             player.sendMessage("Welcome to the server for the first time!");
-            if (applyOnFirstJoin) {
+            if (config.applyOnFirstJoin) {
                 applyGracePeriod(player);
             }
         }
@@ -136,8 +126,8 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
             playerGracePeriod.get(playerID).cancel();
         }
 
-        if (gracePeriodNotifyPlayer) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize(gracePeriodStartMsg));
+        if (config.gracePeriodNotifyPlayer) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize(config.gracePeriodStartMsg));
         }
 
         BukkitTask task = new BukkitRunnable() {
@@ -145,39 +135,19 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
             public void run() {
                 if (playerGracePeriod.containsKey(playerID)) {
                     playerGracePeriod.remove(playerID);
-                    if (gracePeriodNotifyPlayer) {
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(gracePeriodEndMsg));
+                    if (config.gracePeriodNotifyPlayer) {
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(config.gracePeriodEndMsg));
                     }
                 }
             }
-        }.runTaskLater(this, 20L * gracePeriodDuration);
+        }.runTaskLater(this, 20L * config.gracePeriodDuration);
 
         playerGracePeriod.put(playerID, task);
     }
 
-    private void loadConfigValues() {
-        FileConfiguration config = getConfig();
-
-        // Load basic settings
-        gracePeriodDuration = config.getInt("grace_period.duration", 300); // Default: 300 seconds
-        gracePeriodNotifyPlayer = config.getBoolean("grace_period.notify_player", true);
-        applyOnFirstJoin = config.getBoolean("grace_period.apply_on.first_join", true);
-        applyOnRespawn = config.getBoolean("grace_period.apply_on.respawn", false);
-        gracePeriodStartMsg = config.getString("grace_period.message.start", "<green>You have a 5-minute grace period where you are immune to sun damage. Good Luck!");
-        gracePeriodEndMsg = config.getString("grace_period.message.end", "<red>Your grace period has ended. You can now take damage.");
-
-        effectDurationTicks = config.getInt("effect_duration_ticks", 100); // Default: 100 ticks
-
-        // Load nested damage settings
-        burnDamageDay = config.getDouble("burn_damage_amounts.day", 2.0); // Default: 2.0
-        burnDamageNight = config.getDouble("burn_damage_amounts.night", 1.0); // Default: 1.0
-        burnDamageDayWithLeatherArmor = config.getDouble("burn_damage_amounts.day_with_leather_armor", 1.0); // Default: 1.0
-        burnDamageNightWithLeatherArmor = config.getDouble("burn_damage_amounts.night_with_leather_armor", 0.0); // Default: 0.0
-    }
-
     public void reloadConfigValues() {
         reloadConfig();
-        loadConfigValues();
+        config.loadConfigValues(getConfig());
     }
 
     public Component getRandomDeathMessage(Player player) {
@@ -214,7 +184,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         int ticks = affectedPlayers.get(player);
         ticks += PERIOD;
         // stop effect after x ticks
-        if (ticks >= effectDurationTicks) {
+        if (ticks >= config.effectDurationTicks) {
             getLogger().info("Its been " + ticks + " ticks removing effect from " + player.getName());
             return true;
         }
@@ -264,20 +234,20 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         if (wearingLeather) {
             if (isDay) {
                 if (hasWeather) {
-                    return burnDamageNightWithLeatherArmor;
+                    return config.burnDamageNightWithLeatherArmor;
                 }
-                return burnDamageDayWithLeatherArmor;
+                return config.burnDamageDayWithLeatherArmor;
             } else {
-                return burnDamageNightWithLeatherArmor;
+                return config.burnDamageNightWithLeatherArmor;
             }
         }
         if (isDay) {
             if (hasWeather) {
-                return burnDamageNight;
+                return config.burnDamageNight;
             }
-            return burnDamageDay;
+            return config.burnDamageDay;
         } else {
-            return burnDamageNight;
+            return config.burnDamageNight;
         }
     }
 
@@ -307,6 +277,16 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
         if (world == null) {
             getLogger().warning("World is null");
+            return false;
+        }
+
+        World.Environment environment = world.getEnvironment();
+        if ((environment == World.Environment.NETHER && config.preventInNether) ||
+                (environment == World.Environment.THE_END && config.preventInEnd)) {
+            return false;
+        }
+
+        if (config.preventWithFireResistance && player.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE)) {
             return false;
         }
 

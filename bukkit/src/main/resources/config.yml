@@ -14,6 +14,12 @@ grace_period:
     start: "<green>You have a 5-minute grace period where you are immune to sun damage. Good Luck!"
     end: "<red>Your grace period has ended. You can now take damage."
 
+# Conditions where sun damage is prevented
+damage_prevention:
+  nether: true # Prevent damage in the Nether (would only apply when on Nether roof)
+  end: true    # Prevent damage in the End
+  fire_resistance_potion: true # Prevent damage if the player has a fire resistance potion effect
+
 # Duration of effects, specified in ticks (20 ticks = 1 second)
 effect_duration_ticks: 100
 
