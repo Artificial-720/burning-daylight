@@ -3,8 +3,16 @@
 # For issues or suggestions, please submit them at: https://github.com/Artificial-720/burning-daylight/issues
 
 
-# Grace period duration (in seconds) before certain effects take place
-grace_period_duration: 300
+# Grace period before sun damage effect starts
+grace_period:
+  duration: 300 # Grace period in seconds
+  notify_player: true # Notify the player when the grace period starts or ends
+  apply_on:
+    first_join: true  # Apply grace period only on the player's first join
+    respawn: false    # Apply grace period on every respawn
+  message:
+    start: "<green>You have a 5-minute grace period where you are immune to sun damage. Good Luck!"
+    end: "<red>Your grace period has ended. You can now take damage."
 
 # Duration of effects, specified in ticks (20 ticks = 1 second)
 effect_duration_ticks: 100
