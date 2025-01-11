@@ -12,12 +12,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -26,13 +28,19 @@ import java.util.*;
 public final class BurningDaylight extends JavaPlugin implements Listener {
     private static final int PERIOD = 20; // 20 ticks = 1 second
     private static final Map<Player, Integer> affectedPlayers = new HashMap<>();
-    private final Set<UUID> playerGracePeriod = new HashSet<>();
+    private final Map<UUID, BukkitTask> playerGracePeriod = new HashMap<>();
+    // config.yml settings
     private int gracePeriodDuration; // in seconds
     private int effectDurationTicks; // in ticks
     private double burnDamageDay;
     private double burnDamageNight;
     private double burnDamageDayWithLeatherArmor;
     private double burnDamageNightWithLeatherArmor;
+    private boolean gracePeriodNotifyPlayer;
+    private boolean applyOnFirstJoin;
+    private boolean applyOnRespawn;
+    private String gracePeriodStartMsg;
+    private String gracePeriodEndMsg;
 
 
     @Override
@@ -86,12 +94,18 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
             event.deathMessage(message);
         }
     }
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        if (applyOnRespawn) {
+            applyGracePeriod(player);
+        }
+    }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        UUID playerID = player.getUniqueId();
-        OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(playerID);
+        OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(player.getUniqueId());
 
         Component component = MiniMessage.miniMessage().deserialize("""
                 <gold><bold>Welcome to Burning Daylight!</bold></gold>
@@ -103,29 +117,55 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
                 <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>""");
         player.sendMessage(component);
 
-        if (!offlinePlayer.hasPlayedBefore()) {
-            player.sendMessage("Welcome to the server for the first time!");
-            player.sendMessage(ChatColor.GREEN + "You have " + (gracePeriodDuration / 60) + "-minute grace period where you are immune to sun damage. Good Luck!");
-            playerGracePeriod.add(playerID);
+        boolean isFirstJoin = !offlinePlayer.hasPlayedBefore();
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (playerGracePeriod.contains(playerID)) {
-                        playerGracePeriod.remove(playerID);
-                        player.sendMessage(ChatColor.RED + "Your grace period has ended. You can now take damage.");
+
+        if (isFirstJoin){
+            player.sendMessage("Welcome to the server for the first time!");
+            if (applyOnFirstJoin) {
+                applyGracePeriod(player);
+            }
+        }
+    }
+
+    private void applyGracePeriod(Player player) {
+        UUID playerID = player.getUniqueId();
+
+        // If already have a grace period remove that first before refreshing
+        if (playerGracePeriod.containsKey(playerID)) {
+            playerGracePeriod.get(playerID).cancel();
+        }
+
+        if (gracePeriodNotifyPlayer) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize(gracePeriodStartMsg));
+        }
+
+        BukkitTask task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (playerGracePeriod.containsKey(playerID)) {
+                    playerGracePeriod.remove(playerID);
+                    if (gracePeriodNotifyPlayer) {
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(gracePeriodEndMsg));
                     }
                 }
-            }.runTaskLater(this, 20L * gracePeriodDuration);
+            }
+        }.runTaskLater(this, 20L * gracePeriodDuration);
 
-        }
+        playerGracePeriod.put(playerID, task);
     }
 
     private void loadConfigValues() {
         FileConfiguration config = getConfig();
 
         // Load basic settings
-        gracePeriodDuration = config.getInt("grace_period_duration", 300); // Default: 300 seconds
+        gracePeriodDuration = config.getInt("grace_period.duration", 300); // Default: 300 seconds
+        gracePeriodNotifyPlayer = config.getBoolean("grace_period.notify_player", true);
+        applyOnFirstJoin = config.getBoolean("grace_period.apply_on.first_join", true);
+        applyOnRespawn = config.getBoolean("grace_period.apply_on.respawn", false);
+        gracePeriodStartMsg = config.getString("grace_period.message.start", "<green>You have a 5-minute grace period where you are immune to sun damage. Good Luck!");
+        gracePeriodEndMsg = config.getString("grace_period.message.end", "<red>Your grace period has ended. You can now take damage.");
+
         effectDurationTicks = config.getInt("effect_duration_ticks", 100); // Default: 100 ticks
 
         // Load nested damage settings
@@ -260,7 +300,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     private boolean isBurnConditionMet(Player player) {
         if (player.isDead()) return false;
         if (player.getGameMode().compareTo(GameMode.CREATIVE) == 0) return false;
-        if (playerGracePeriod.contains(player.getUniqueId())) return false;
+        if (playerGracePeriod.containsKey(player.getUniqueId())) return false;
 
         Location location = player.getLocation();
         World world = location.getWorld();
