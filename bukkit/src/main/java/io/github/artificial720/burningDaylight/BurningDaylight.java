@@ -184,7 +184,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         int ticks = affectedPlayers.get(player);
         ticks += PERIOD;
         // stop effect after x ticks
-        if (ticks >= config.effectDurationTicks) {
+        if (ticks >= config.getEffectDurationInTicks()) {
             getLogger().info("Its been " + ticks + " ticks removing effect from " + player.getName());
             return true;
         }
@@ -234,7 +234,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         if (wearingLeather) {
             if (isDay) {
                 if (hasWeather) {
-                    return config.burnDamageNightWithLeatherArmor;
+                    return config.burnDamageWeatherWithLeatherArmor;
                 }
                 return config.burnDamageDayWithLeatherArmor;
             } else {
@@ -243,7 +243,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         }
         if (isDay) {
             if (hasWeather) {
-                return config.burnDamageNight;
+                return config.burnDamageWeather;
             }
             return config.burnDamageDay;
         } else {
