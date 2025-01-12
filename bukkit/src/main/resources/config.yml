@@ -20,12 +20,17 @@ damage_prevention:
   end: true    # Prevent damage in the End
   fire_resistance_potion: true # Prevent damage if the player has a fire resistance potion effect
 
-# Duration of effects, specified in ticks (20 ticks = 1 second)
-effect_duration_ticks: 100
-
 # Damage amounts under various conditions (2 damage = 1 heart)
-burn_damage_amounts:
-  day: 2.0        # Damage during the day
-  night: 1.0      # Damage during the night
-  day_with_leather_armor: 1.0 # Damage during the day while wearing leather armor
-  night_with_leather_armor: 0.0 # Damage during the night while wearing leather armor
+burn_damage:
+  day:
+    default: 2.0 # Damage during the day
+    leather_armor: 1.0 # Damage during the day while wearing leather armor
+  night:
+    default: 1.0 # Damage during the night
+    leather_armor: 0.0 # Damage during the night while wearing leather armor
+  weather:
+    default: 1.0 # Damage during weather
+    leather_armor: 0.0 # Damage during weather while wearing leather armor
+
+# Duration of sun damage effect in seconds
+effect_duration: 5
