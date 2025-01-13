@@ -30,6 +30,11 @@ public class BurningDaylightConfig {
 
     public int effectDuration; // in seconds
 
+    // Logging
+    public boolean loggingEnabled ;
+    public boolean logToChat;
+    public boolean logToConsole;
+
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
     }
@@ -65,6 +70,11 @@ public class BurningDaylightConfig {
 
         // effect
         effectDuration = config.getInt("effect_duration", 5);
+
+        // logging
+        loggingEnabled = config.getBoolean("logging.enabled", false);
+        logToConsole = config.getBoolean("logging.log_to_console", true);
+        logToChat = config.getBoolean("logging.log_to_chat", false);
     }
 
     public int getEffectDurationInTicks() {

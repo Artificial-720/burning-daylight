@@ -43,3 +43,11 @@ armor_behavior:
 
 # Duration of sun damage effect in seconds
 effect_duration: 5
+
+
+
+# More intensive logging
+logging:
+  enabled: false        # Enable plugin logging
+  log_to_console: true  # Log events to the console
+  log_to_chat: false    # Log events to the in game chat

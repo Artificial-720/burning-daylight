@@ -24,6 +24,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public final class BurningDaylight extends JavaPlugin implements Listener {
     private static final int PERIOD = 20; // 20 ticks = 1 second
@@ -181,21 +182,50 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
     private boolean shouldStopBurnEffect(Player player) {
         if (!affectedPlayers.containsKey(player)) return true;
-
+        int highestFireProtectionLevel = getHighestFireProtectionLevel(player);
         int ticks = affectedPlayers.get(player);
         ticks += PERIOD;
+
         // stop effect after x ticks
         if (ticks >= config.getEffectDurationInTicks()) {
-            getLogger().info("Its been " + ticks + " ticks removing effect from " + player.getName());
+            log("Its been " + ticks + " ticks removing effect from " + player.getName());
             return true;
         }
+
+        // Apply fire protection reduction, 15% for each level max of 60%
+        if (highestFireProtectionLevel > 0) {
+            double effectReduction = highestFireProtectionLevel * 0.15;
+            double reducedTime = config.getEffectDurationInTicks() * (1 - effectReduction);
+            if (ticks >= reducedTime) {
+                log("Its been " + ticks + " ticks removing effect. shorter cause fire protection level: " + highestFireProtectionLevel);
+                return true;
+            }
+        }
+
         affectedPlayers.put(player, ticks);
         return !player.isOnline() || player.isDead();
     }
 
+    private int getHighestFireProtectionLevel(Player player) {
+        int highest = 0;
+        for (ItemStack armor : player.getInventory().getArmorContents()) {
+            if (armor != null && armor.getType() != Material.AIR) {
+                int protectionLevel = armor.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                if (protectionLevel > highest) {
+                    highest = protectionLevel;
+                }
+            }
+        }
+        return highest;
+    }
+
     private void applyBurnEffect(Player player) {
         double damage = calculateBurnDamage(player);
-        player.damage(damage);
+        log("Applying damage to player: " + damage);
+        if (damage > 0.0) {
+            // prevent screen shake when not applying any damage
+            player.damage(damage);
+        }
         player.getWorld().playEffect(player.getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1f);
     }
@@ -218,21 +248,24 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     }
 
     private double calculateArmorReduction(Player player, double damage) {
+        World world = player.getWorld();
+        boolean isDay = world.isDayTime();
+        boolean hasWeather = world.hasStorm() || world.isThundering();
         double totalReduction = 0.0;
+        int totalFireProtectionLevel = 0;
 
         for (ItemStack armor : player.getInventory().getArmorContents()) {
             if (armor != null && armor.getType() != Material.AIR) {
-                World world = player.getWorld();
-                boolean isDay = world.isDayTime();
-                boolean hasWeather = world.hasStorm() || world.isThundering();
                 Material material = armor.getType();
-                String armorName = material.name().toLowerCase().replace("_", "");
+                String armorName = material.name().toLowerCase().replaceAll("_\\w+$", "");
                 double reduction = config.getArmorDamageReduction(armorName);
+                log("ArmorName: " + armorName + " reduction of " + reduction);
 
                 if (reduction > 0) {
                     if ((config.durabilityDay && isDay) ||
                             (config.durabilityNight && !isDay) ||
                             (config.durabilityWeather && hasWeather)) {
+                        log("Conditions met applying durability damage isDay: " + isDay + " hasWeather: " + hasWeather);
                         applyDurabilityDamage(player, armor, damage);
                     }
                 }
@@ -241,22 +274,26 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
                 int protectionLevel = armor.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                 if (protectionLevel > 0) {
-                    // The formula for fire damage reduction (8 × level)%, up to a maximum 32% reduction with Fire Protection IV.
-                    // The reduction stacks with multiple pieces of armor enchanted with Fire Protection.
-                    totalReduction += (0.08 * protectionLevel);
+                    totalFireProtectionLevel += protectionLevel;
                 }
             }
         }
+        // Cap fire protection reduction at 80%
+        totalReduction += Math.min(0.08 * totalFireProtectionLevel, 0.8);
+
+        log("total armor reduction: " + totalReduction);
 
         return totalReduction;
     }
 
     private void applyDurabilityDamage(Player player, ItemStack armor, double damage) {
+        log("Applying Durability Damage");
         ItemMeta meta = armor.getItemMeta();
         if (meta instanceof Damageable damageable) {
             int unBreakingLevel = damageable.getEnchantLevel(Enchantment.DURABILITY);
             double chance = 60 + (40.0 / (unBreakingLevel + 1));
             if (random.nextDouble() * 100 > chance) {
+                log("UnBreaking Skipping durability");
                 return; // Skip durability damage
             }
 
@@ -312,5 +349,19 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         }
 
         return true;
+    }
+
+    public void log(String msg) {
+        log(msg, Level.INFO);
+    }
+
+    public void log(String msg, Level level) {
+        if (!config.loggingEnabled) return;
+        if (config.logToConsole) {
+            getLogger().log(level, msg);
+        }
+        if (config.logToChat) {
+            getServer().broadcast(MiniMessage.miniMessage().deserialize("[" + level.getName() + "] " + msg));
+        }
     }
 }
