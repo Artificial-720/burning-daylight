@@ -4,21 +4,36 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class BurningDaylightConfig {
     public int gracePeriodDuration; // in seconds
-    public int effectDuration; // in seconds
-    public double burnDamageDay;
-    public double burnDamageNight;
-    public double burnDamageWeather;
-    public double burnDamageDayWithLeatherArmor;
-    public double burnDamageNightWithLeatherArmor;
-    public double burnDamageWeatherWithLeatherArmor;
     public boolean gracePeriodNotifyPlayer;
-    public boolean applyOnFirstJoin;
-    public boolean applyOnRespawn;
+    public boolean gracePeriodOnFirstJoin;
+    public boolean gracePeriodOnRespawn;
+    public String gracePeriodStartMsg;
+    public String gracePeriodEndMsg;
+
     public boolean preventInNether;
     public boolean preventInEnd;
     public boolean preventWithFireResistance;
-    public String gracePeriodStartMsg;
-    public String gracePeriodEndMsg;
+
+    public double burnDamageDay;
+    public double burnDamageNight;
+    public double burnDamageWeather;
+
+    // Armor behavior
+    private double leatherArmor;
+    private double ironArmor;
+    private double goldArmor;
+    private double diamondArmor;
+    private double netheriteArmor;
+    public boolean durabilityDay;
+    public boolean durabilityNight;
+    public boolean durabilityWeather;
+
+    public int effectDuration; // in seconds
+
+    // Logging
+    public boolean loggingEnabled ;
+    public boolean logToChat;
+    public boolean logToConsole;
 
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
@@ -28,29 +43,52 @@ public class BurningDaylightConfig {
         // grace period
         gracePeriodDuration = config.getInt("grace_period.duration", 300);
         gracePeriodNotifyPlayer = config.getBoolean("grace_period.notify_player", true);
-        applyOnFirstJoin = config.getBoolean("grace_period.apply_on.first_join", true);
-        applyOnRespawn = config.getBoolean("grace_period.apply_on.respawn", false);
+        gracePeriodOnFirstJoin = config.getBoolean("grace_period.apply_on.first_join", true);
+        gracePeriodOnRespawn = config.getBoolean("grace_period.apply_on.respawn", false);
         gracePeriodStartMsg = config.getString("grace_period.message.start", "<green>You have a 5-minute grace period where you are immune to sun damage. Good Luck!");
         gracePeriodEndMsg = config.getString("grace_period.message.end", "<red>Your grace period has ended. You can now take damage.");
-
-        // effect
-        effectDuration = config.getInt("effect_duration", 5);
-
-        // damage numbers
-        burnDamageDay = config.getDouble("burn_damage.day.default", 2.0);
-        burnDamageNight = config.getDouble("burn_damage.night.default", 1.0);
-        burnDamageWeather = config.getDouble("burn_damage.weather.default", 1.0);
-        burnDamageDayWithLeatherArmor = config.getDouble("burn_damage.day.leather_armor", 1.0);
-        burnDamageNightWithLeatherArmor = config.getDouble("burn_damage.night.leather_armor", 0.0);
-        burnDamageWeatherWithLeatherArmor = config.getDouble("burn_damage.weather.leather_armor");
 
         // prevent damage
         preventInNether = config.getBoolean("damage_prevention.nether", true);
         preventInEnd = config.getBoolean("damage_prevention.end", true);
         preventWithFireResistance = config.getBoolean("damage_prevention.fire_resistance_potion", true);
+
+        // damage numbers
+        burnDamageDay = config.getDouble("burn_damage.day", 2.0);
+        burnDamageNight = config.getDouble("burn_damage.night", 1.0);
+        burnDamageWeather = config.getDouble("burn_damage.weather", 1.0);
+
+        // Armor behavior
+        leatherArmor = config.getDouble("armor_behavior.damage_reduciton.leather_armor", 0.25);
+        ironArmor = config.getDouble("armor_behavior.damage_reduciton.iron_armor", 0.0);
+        goldArmor = config.getDouble("armor_behavior.damage_reduciton.gold_armor", 0.0);
+        diamondArmor = config.getDouble("armor_behavior.damage_reduciton.diamond_armor", 0.0);
+        netheriteArmor = config.getDouble("armor_behavior.damage_reduciton.netherite_armor", 0.0);
+        durabilityDay = config.getBoolean("armor_behavior.durability.day", true);
+        durabilityNight = config.getBoolean("armor_behavior.durability.night", false);
+        durabilityWeather = config.getBoolean("armor_behavior.durability.weather", false);
+
+        // effect
+        effectDuration = config.getInt("effect_duration", 5);
+
+        // logging
+        loggingEnabled = config.getBoolean("logging.enabled", false);
+        logToConsole = config.getBoolean("logging.log_to_console", true);
+        logToChat = config.getBoolean("logging.log_to_chat", false);
     }
 
     public int getEffectDurationInTicks() {
         return effectDuration * 20;
+    }
+
+    public double getArmorDamageReduction(String armorName) {
+        return switch (armorName) {
+            case "leather" -> leatherArmor;
+            case "iron" -> ironArmor;
+            case "gold" -> goldArmor;
+            case "diamond" -> diamondArmor;
+            case "netherite" -> netheriteArmor;
+            default -> 0.0;
+        };
     }
 }

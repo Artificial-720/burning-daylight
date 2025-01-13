@@ -22,15 +22,32 @@ damage_prevention:
 
 # Damage amounts under various conditions (2 damage = 1 heart)
 burn_damage:
-  day:
-    default: 2.0 # Damage during the day
-    leather_armor: 1.0 # Damage during the day while wearing leather armor
-  night:
-    default: 1.0 # Damage during the night
-    leather_armor: 0.0 # Damage during the night while wearing leather armor
-  weather:
-    default: 1.0 # Damage during weather
-    leather_armor: 0.0 # Damage during weather while wearing leather armor
+  day: 2.0 # Damage during the day
+  night: 1.0 # Damage during the night
+  weather: 1.0 # Damage during weather
+
+armor_behavior:
+  # Multiply damage by this factor when wearing piece of armor
+  # Example: Full leather
+  # 0.25 + 0.25 + 0.25 + 0.25 = 1.00 or 100% damage reduction
+  damage_reduciton:
+    leather_armor: 0.25
+    iron_armor: 0.0
+    gold_armor: 0.0
+    diamond_armor: 0.0
+    netherite_armor: 0.0
+  durability:
+    day: true      # Apply durability damage to armor during day
+    night: false   # Apply durability damage to armor during night
+    weather: false # Apply durability damage to armor during weather
 
 # Duration of sun damage effect in seconds
 effect_duration: 5
+
+
+
+# More intensive logging
+logging:
+  enabled: false        # Enable plugin logging
+  log_to_console: true  # Log events to the console
+  log_to_chat: false    # Log events to the in game chat
