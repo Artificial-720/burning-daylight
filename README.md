@@ -9,32 +9,49 @@
 ## Features
 
 - **Sunburn Damage**: Direct exposure to sunlight causes damage—find shade or go underground to stay safe.
-- **Nighttime Safety**: Reduced damage at night.
-- **Weather Protection**: Rainy or stormy weather diminishes sunlight.
-- **Special Sun Gear**: Leather armor mitigates or eliminates sunburn damage, making it essential for survival. (Full leather armor duing nightime negates all damage with default damage settings.)
+  - Damage duration and intensity are fully configurable.
+- **Nighttime Safety**: Reduced damage at night. This is configurable through settings.
+- **Weather Protection**: Rainy or stormy weather diminishes sunlight. This is configurable through settings.
+- **Special Sun Gear**:
+  - Leather armor mitigates or eliminates sunburn damage, making it essential for survival.
+  - (Full leather armor during nightime negates all damage with default damage settings.)
+- **Grace Period**:
+  - Players start with a 5-minute grace period (default), during which they are immune to sunburn damage.
+  - Grace periods can be applied on the first join or upon respawning, with customizable start/end messages.
+- **Customizable Damage Prevention**:
+  - Sunburn damage can be prevented in specific dimensions, such as the Nether or the End.
+  - Fire Resistance potions can also grant immunity if enabled in the configuration.
+- **Armor Protection**:
+  - Leather armor is the default protective gear, reducing damage by 25% per piece (full leather armor negates 100% of damage).
+  - Other armor types (iron, gold, diamond, netherite) can be configured for protection through the settings.
+  - Fire Protection enchantments further reduce damage.
+- **Daytime Durability Damage**:
+  - Armor takes durability damage from sun exposure during the day (default).
+  - Durability loss can also be toggled for nighttime and weather.
+- **Exempt Players**: Specific players can be exempted from sunburn damage via configuration.
 
 ## Commands
 
 - `/burn reload`: Reloads the plugin's configuration file.
+- `/burn exempt <playerName>`: Exempts a player from receiving damage.
+- `/burn unexempt <playerName>`: Unexempts a player from receiving damage.
 
 ## Permissions
 
 - `burn.reload`: Grants access to the `/burn reload` command.
+- `burn.exempt`: Grants access to the `/burn exempt` command.
+- `burn.unexempt`: Grants access to the `/burn unexempt` command.
 
-## Configuration
+## Installation and Configuration
 
-You can adjust the plugin's behavior using the configuration file. Here's a breakdown of the configurable options:
+1. **Install**:
+   - Download the plugin `.jar` file and place it in your server's `plugins` directory.
+   - Restart the server to load the plugin.
 
-To modify settings:
-1. Open the `config.yml` file in your server's `plugins/BurningDaylight` directory.
-2. Edit the values as desired.
-3. Save the file and reload the plugin using `/burn reload`.
-
-## Installation
-
-1. Download the plugin `.jar` file and place it in your server's `plugins` directory.
-2. Restart the server to load the plugin.
-3. Configure the settings as needed in `config.yml`.
+2. **Configure**:
+   - Open the `config.yml` file in your server's `plugins/BurningDaylight` directory. 
+   - Edit the values as desired. 
+   - Save the file and reload the plugin using `/burn reload`.
 
 ## Reporting Issues
 
