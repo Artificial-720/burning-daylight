@@ -44,6 +44,9 @@ armor_behavior:
 # Duration of sun damage effect in seconds
 effect_duration: 5
 
+# Exempt players are not effected by sun damage
+exempt_players: []
+
 
 
 # More intensive logging

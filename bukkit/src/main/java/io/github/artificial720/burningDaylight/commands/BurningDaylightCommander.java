@@ -21,6 +21,8 @@ public class BurningDaylightCommander implements CommandExecutor, TabCompleter {
         subCommands = new HashMap<>();
 
         subCommands.put("reload", new ReloadCommand(plugin));
+        subCommands.put("exempt", new ExemptCommand(plugin));
+        subCommands.put("unexempt", new UnExemptCommand(plugin));
     }
 
     @Override

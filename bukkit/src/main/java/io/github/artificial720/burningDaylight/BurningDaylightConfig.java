@@ -2,6 +2,10 @@ package io.github.artificial720.burningDaylight;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class BurningDaylightConfig {
     public int gracePeriodDuration; // in seconds
     public boolean gracePeriodNotifyPlayer;
@@ -34,6 +38,9 @@ public class BurningDaylightConfig {
     public boolean loggingEnabled ;
     public boolean logToChat;
     public boolean logToConsole;
+
+    // Exempt players
+    private Set<String> exemptPlayers;
 
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
@@ -75,6 +82,10 @@ public class BurningDaylightConfig {
         loggingEnabled = config.getBoolean("logging.enabled", false);
         logToConsole = config.getBoolean("logging.log_to_console", true);
         logToChat = config.getBoolean("logging.log_to_chat", false);
+
+        // exempt players
+        List<String> loadedExemptPlayers = config.getStringList("exempt_players");
+        exemptPlayers = new HashSet<>(loadedExemptPlayers);
     }
 
     public int getEffectDurationInTicks() {
@@ -90,5 +101,9 @@ public class BurningDaylightConfig {
             case "netherite" -> netheriteArmor;
             default -> 0.0;
         };
+    }
+
+    public Set<String> getExemptPlayers() {
+        return exemptPlayers;
     }
 }
