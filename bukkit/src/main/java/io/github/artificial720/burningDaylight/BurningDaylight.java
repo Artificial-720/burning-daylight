@@ -315,6 +315,7 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
     private boolean isBurnConditionMet(Player player) {
         if (player.isDead()) return false;
+        if (config.getExemptPlayers().contains(player.getName())) return false;
         if (player.getGameMode().compareTo(GameMode.CREATIVE) == 0) return false;
         if (playerGracePeriod.containsKey(player.getUniqueId())) return false;
 
@@ -363,5 +364,24 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         if (config.logToChat) {
             getServer().broadcast(MiniMessage.miniMessage().deserialize("[" + level.getName() + "] " + msg));
         }
+    }
+
+    public Set<String> getExemptPlayers() {
+        return config.getExemptPlayers();
+    }
+
+    public void addExemptPlayer(String playerName) {
+        config.getExemptPlayers().add(playerName);
+        saveExemptPlayers();
+    }
+
+    public void removeExemptPlayer(String playerName) {
+        config.getExemptPlayers().remove(playerName);
+        saveExemptPlayers();
+    }
+
+    private void saveExemptPlayers() {
+        getConfig().set("exempt_players", List.copyOf(config.getExemptPlayers()));
+        saveConfig();
     }
 }
