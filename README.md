@@ -12,9 +12,6 @@
   - Damage duration and intensity are fully configurable.
 - **Nighttime Safety**: Reduced damage at night. This is configurable through settings.
 - **Weather Protection**: Rainy or stormy weather diminishes sunlight. This is configurable through settings.
-- **Special Sun Gear**:
-  - Leather armor mitigates or eliminates sunburn damage, making it essential for survival.
-  - (Full leather armor during nightime negates all damage with default damage settings.)
 - **Grace Period**:
   - Players start with a 5-minute grace period (default), during which they are immune to sunburn damage.
   - Grace periods can be applied on the first join or upon respawning, with customizable start/end messages.
