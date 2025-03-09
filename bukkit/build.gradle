@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:${project.minecraft_version}-R0.1-SNAPSHOT"
+    compileOnly "io.papermc.paper:paper-api:${project.api_version}"
 }
 
 processResources {
