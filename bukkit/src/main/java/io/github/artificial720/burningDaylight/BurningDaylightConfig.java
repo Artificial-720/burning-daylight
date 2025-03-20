@@ -14,8 +14,6 @@ public class BurningDaylightConfig {
     public String gracePeriodStartMsg;
     public String gracePeriodEndMsg;
 
-    public boolean preventInNether;
-    public boolean preventInEnd;
     public boolean preventWithFireResistance;
 
     public double burnDamageDay;
@@ -23,6 +21,7 @@ public class BurningDaylightConfig {
     public double burnDamageWeather;
 
     // Armor behavior
+    public boolean enchantmentFireProtection;
     private double leatherArmor;
     private double ironArmor;
     private double goldArmor;
@@ -42,6 +41,13 @@ public class BurningDaylightConfig {
     // Exempt players
     private Set<String> exemptPlayers;
 
+    // Enabled worlds
+    private Set<String> enabledWorlds;
+
+    // Messages
+    public String joinMessage;
+    public String firstJoinMessage;
+
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
     }
@@ -56,8 +62,6 @@ public class BurningDaylightConfig {
         gracePeriodEndMsg = config.getString("grace_period.message.end", "<red>Your grace period has ended. You can now take damage.");
 
         // prevent damage
-        preventInNether = config.getBoolean("damage_prevention.nether", true);
-        preventInEnd = config.getBoolean("damage_prevention.end", true);
         preventWithFireResistance = config.getBoolean("damage_prevention.fire_resistance_potion", true);
 
         // damage numbers
@@ -66,6 +70,7 @@ public class BurningDaylightConfig {
         burnDamageWeather = config.getDouble("burn_damage.weather", 1.0);
 
         // Armor behavior
+        enchantmentFireProtection = config.getBoolean("armor_behavior.enchantment_fire_protection", true);
         leatherArmor = config.getDouble("armor_behavior.damage_reduciton.leather_armor", 0.25);
         ironArmor = config.getDouble("armor_behavior.damage_reduciton.iron_armor", 0.0);
         goldArmor = config.getDouble("armor_behavior.damage_reduciton.gold_armor", 0.0);
@@ -86,6 +91,21 @@ public class BurningDaylightConfig {
         // exempt players
         List<String> loadedExemptPlayers = config.getStringList("exempt_players");
         exemptPlayers = new HashSet<>(loadedExemptPlayers);
+
+        // enabled worlds
+        List<String> loadedEnabledWorlds = config.getStringList("enabled_worlds");
+        enabledWorlds = new HashSet<>(loadedEnabledWorlds);
+
+        // Messages
+        joinMessage = config.getString("messages.join", """
+                <gold><bold>Welcome to Burning Daylight!</bold></gold>
+                
+                <white><bold>Core Mechanics:</bold></white>
+                <red>  - Sunburn Damage:</red> <white>Direct sunlight will damage you, so stay in the shade or underground!</white>
+                <blue>  - Nighttime Safety:</blue> <white>You'll take less damage at night, so use it to your advantage.</white>
+                <dark_aqua>  - Weather Protection:</dark_aqua> <white>Rainy or stormy weather also reduces sunlight damage—watch the skies!</white>
+                <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>""");
+        firstJoinMessage = config.getString("messages.first_join", "Welcome to the server for the first time!");
     }
 
     public int getEffectDurationInTicks() {
@@ -105,5 +125,9 @@ public class BurningDaylightConfig {
 
     public Set<String> getExemptPlayers() {
         return exemptPlayers;
+    }
+
+    public boolean worldEnabled(String name) {
+        return enabledWorlds.contains(name);
     }
 }

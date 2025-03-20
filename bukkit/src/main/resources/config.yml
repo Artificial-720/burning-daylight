@@ -2,6 +2,17 @@
 # Author: Artificial-720
 # For issues or suggestions, please submit them at: https://github.com/Artificial-720/burning-daylight/issues
 
+# Join message
+messages:
+  first_join: "Welcome to the server for the first time!"
+  join: |
+    <gold><bold>Welcome to Burning Daylight!</bold></gold>
+    
+    <white><bold>Core Mechanics:</bold></white>
+    <red>  - Sunburn Damage:</red> <white>Direct sunlight will damage you, so stay in the shade or underground!</white>
+    <blue>  - Nighttime Safety:</blue> <white>You'll take less damage at night, so use it to your advantage.</white>
+    <dark_aqua>  - Weather Protection:</dark_aqua> <white>Rainy or stormy weather also reduces sunlight damage—watch the skies!</white>
+    <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>
 
 # Grace period before sun damage effect starts
 grace_period:
@@ -16,8 +27,6 @@ grace_period:
 
 # Conditions where sun damage is prevented
 damage_prevention:
-  nether: true # Prevent damage in the Nether (would only apply when on Nether roof)
-  end: true    # Prevent damage in the End
   fire_resistance_potion: true # Prevent damage if the player has a fire resistance potion effect
 
 # Damage amounts under various conditions (2 damage = 1 heart)
@@ -27,6 +36,8 @@ burn_damage:
   weather: 1.0 # Damage during weather
 
 armor_behavior:
+  # Whether to apply fire protection enchantment damage reduction to burning daylight damage
+  enchantment_fire_protection: true
   # Multiply damage by this factor when wearing piece of armor
   # Example: Full leather
   # 0.25 + 0.25 + 0.25 + 0.25 = 1.00 or 100% damage reduction
@@ -47,7 +58,13 @@ effect_duration: 5
 # Exempt players are not effected by sun damage
 exempt_players: []
 
-
+# List of worlds where burning damage is enabled
+enabled_worlds:
+  - world
+# Apply damage in the Nether (would only apply when on Nether roof)
+# - world_nether
+# Apply damage in the End
+# - world_the_end
 
 # More intensive logging
 logging:
