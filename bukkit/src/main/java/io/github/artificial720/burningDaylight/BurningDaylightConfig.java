@@ -21,6 +21,7 @@ public class BurningDaylightConfig {
     public double burnDamageWeather;
 
     // Armor behavior
+    public boolean enchantmentFireProtection;
     private double leatherArmor;
     private double ironArmor;
     private double goldArmor;
@@ -65,6 +66,7 @@ public class BurningDaylightConfig {
         burnDamageWeather = config.getDouble("burn_damage.weather", 1.0);
 
         // Armor behavior
+        enchantmentFireProtection = config.getBoolean("armor_behavior.enchantment_fire_protection", true);
         leatherArmor = config.getDouble("armor_behavior.damage_reduciton.leather_armor", 0.25);
         ironArmor = config.getDouble("armor_behavior.damage_reduciton.iron_armor", 0.0);
         goldArmor = config.getDouble("armor_behavior.damage_reduciton.gold_armor", 0.0);

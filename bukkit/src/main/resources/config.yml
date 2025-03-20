@@ -25,6 +25,8 @@ burn_damage:
   weather: 1.0 # Damage during weather
 
 armor_behavior:
+  # Whether to apply fire protection enchantment damage reduction to burning daylight damage
+  enchantment_fire_protection: true
   # Multiply damage by this factor when wearing piece of armor
   # Example: Full leather
   # 0.25 + 0.25 + 0.25 + 0.25 = 1.00 or 100% damage reduction

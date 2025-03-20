@@ -281,8 +281,10 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
                 }
             }
         }
-        // Cap fire protection reduction at 80%
-        totalReduction += Math.min(0.08 * totalFireProtectionLevel, 0.8);
+        if (config.enchantmentFireProtection) {
+            // Cap fire protection reduction at 80%
+            totalReduction += Math.min(0.08 * totalFireProtectionLevel, 0.8);
+        }
 
         log("total armor reduction: " + totalReduction);
 
