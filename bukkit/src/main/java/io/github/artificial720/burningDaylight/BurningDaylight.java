@@ -332,12 +332,6 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
 
         if (!config.worldEnabled(player.getWorld().getName())) return false;
 
-        World.Environment environment = world.getEnvironment();
-        if ((environment == World.Environment.NETHER && config.preventInNether) ||
-                (environment == World.Environment.THE_END && config.preventInEnd)) {
-            return false;
-        }
-
         if (config.preventWithFireResistance && player.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE)) {
             return false;
         }

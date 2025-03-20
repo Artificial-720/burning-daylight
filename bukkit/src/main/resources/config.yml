@@ -16,8 +16,6 @@ grace_period:
 
 # Conditions where sun damage is prevented
 damage_prevention:
-  nether: true # Prevent damage in the Nether (would only apply when on Nether roof)
-  end: true    # Prevent damage in the End
   fire_resistance_potion: true # Prevent damage if the player has a fire resistance potion effect
 
 # Damage amounts under various conditions (2 damage = 1 heart)
@@ -50,7 +48,10 @@ exempt_players: []
 # Whitelist Worlds
 enabled_worlds:
   - world
-
+# Prevent damage in the Nether (would only apply when on Nether roof)
+# - world_nether
+# Prevent damage in the End
+# - world_the_end
 
 # More intensive logging
 logging:

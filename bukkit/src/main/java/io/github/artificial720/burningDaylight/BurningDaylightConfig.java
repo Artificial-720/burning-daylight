@@ -1,7 +1,6 @@
 package io.github.artificial720.burningDaylight;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,8 +14,6 @@ public class BurningDaylightConfig {
     public String gracePeriodStartMsg;
     public String gracePeriodEndMsg;
 
-    public boolean preventInNether;
-    public boolean preventInEnd;
     public boolean preventWithFireResistance;
 
     public double burnDamageDay;
@@ -60,8 +57,6 @@ public class BurningDaylightConfig {
         gracePeriodEndMsg = config.getString("grace_period.message.end", "<red>Your grace period has ended. You can now take damage.");
 
         // prevent damage
-        preventInNether = config.getBoolean("damage_prevention.nether", true);
-        preventInEnd = config.getBoolean("damage_prevention.end", true);
         preventWithFireResistance = config.getBoolean("damage_prevention.fire_resistance_potion", true);
 
         // damage numbers
