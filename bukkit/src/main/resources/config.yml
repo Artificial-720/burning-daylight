@@ -47,6 +47,9 @@ effect_duration: 5
 # Exempt players are not effected by sun damage
 exempt_players: []
 
+# Whitelist Worlds
+enabled_worlds:
+  - world
 
 
 # More intensive logging

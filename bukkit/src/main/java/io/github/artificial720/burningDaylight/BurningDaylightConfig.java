@@ -1,6 +1,7 @@
 package io.github.artificial720.burningDaylight;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +42,9 @@ public class BurningDaylightConfig {
 
     // Exempt players
     private Set<String> exemptPlayers;
+
+    // Enabled worlds
+    private Set<String> enabledWorlds;
 
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
@@ -86,6 +90,10 @@ public class BurningDaylightConfig {
         // exempt players
         List<String> loadedExemptPlayers = config.getStringList("exempt_players");
         exemptPlayers = new HashSet<>(loadedExemptPlayers);
+
+        // enabled worlds
+        List<String> loadedEnabledWorlds = config.getStringList("enabled_worlds");
+        enabledWorlds = new HashSet<>(loadedEnabledWorlds);
     }
 
     public int getEffectDurationInTicks() {
@@ -105,5 +113,9 @@ public class BurningDaylightConfig {
 
     public Set<String> getExemptPlayers() {
         return exemptPlayers;
+    }
+
+    public boolean worldEnabled(String name) {
+        return enabledWorlds.contains(name);
     }
 }

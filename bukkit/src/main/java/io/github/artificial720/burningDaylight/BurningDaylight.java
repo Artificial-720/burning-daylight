@@ -90,14 +90,17 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        if (config.gracePeriodOnRespawn) {
-            applyGracePeriod(player);
+        if (config.worldEnabled(player.getWorld().getName())) {
+            if (config.gracePeriodOnRespawn) {
+                applyGracePeriod(player);
+            }
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        if (!config.worldEnabled(player.getWorld().getName())) return;
         OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(player.getUniqueId());
 
         Component component = MiniMessage.miniMessage().deserialize("""
@@ -326,6 +329,8 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
             getLogger().warning("World is null");
             return false;
         }
+
+        if (!config.worldEnabled(player.getWorld().getName())) return false;
 
         World.Environment environment = world.getEnvironment();
         if ((environment == World.Environment.NETHER && config.preventInNether) ||
