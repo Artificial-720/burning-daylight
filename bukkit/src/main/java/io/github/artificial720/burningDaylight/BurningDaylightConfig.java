@@ -44,6 +44,10 @@ public class BurningDaylightConfig {
     // Enabled worlds
     private Set<String> enabledWorlds;
 
+    // Messages
+    public String joinMessage;
+    public String firstJoinMessage;
+
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
     }
@@ -91,6 +95,17 @@ public class BurningDaylightConfig {
         // enabled worlds
         List<String> loadedEnabledWorlds = config.getStringList("enabled_worlds");
         enabledWorlds = new HashSet<>(loadedEnabledWorlds);
+
+        // Messages
+        joinMessage = config.getString("messages.join", """
+                <gold><bold>Welcome to Burning Daylight!</bold></gold>
+                
+                <white><bold>Core Mechanics:</bold></white>
+                <red>  - Sunburn Damage:</red> <white>Direct sunlight will damage you, so stay in the shade or underground!</white>
+                <blue>  - Nighttime Safety:</blue> <white>You'll take less damage at night, so use it to your advantage.</white>
+                <dark_aqua>  - Weather Protection:</dark_aqua> <white>Rainy or stormy weather also reduces sunlight damage—watch the skies!</white>
+                <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>""");
+        firstJoinMessage = config.getString("messages.first_join", "Welcome to the server for the first time!");
     }
 
     public int getEffectDurationInTicks() {

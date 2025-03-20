@@ -103,20 +103,17 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
         if (!config.worldEnabled(player.getWorld().getName())) return;
         OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(player.getUniqueId());
 
-        Component component = MiniMessage.miniMessage().deserialize("""
-                <gold><bold>Welcome to Burning Daylight!</bold></gold>
-                
-                <white><bold>Core Mechanics:</bold></white>
-                <red>  - Sunburn Damage:</red> <white>Direct sunlight will damage you, so stay in the shade or underground!</white>
-                <blue>  - Nighttime Safety:</blue> <white>You'll take less damage at night, so use it to your advantage.</white>
-                <dark_aqua>  - Weather Protection:</dark_aqua> <white>Rainy or stormy weather also reduces sunlight damage—watch the skies!</white>
-                <green>  - Special Sun Gear:</green> <white>Leather armor isn't just for style; it protects you from the sun's harsh rays.</white>""");
-        player.sendMessage(component);
+        if (!config.joinMessage.trim().isEmpty()) {
+            Component component = MiniMessage.miniMessage().deserialize(config.joinMessage);
+            player.sendMessage(component);
+        }
 
         boolean isFirstJoin = !offlinePlayer.hasPlayedBefore();
 
         if (isFirstJoin){
-            player.sendMessage("Welcome to the server for the first time!");
+            if (!config.firstJoinMessage.trim().isEmpty()) {
+                player.sendMessage(config.firstJoinMessage);
+            }
             if (config.gracePeriodOnFirstJoin) {
                 applyGracePeriod(player);
             }
