@@ -48,6 +48,10 @@ public class BurningDaylightConfig {
     public String joinMessage;
     public String firstJoinMessage;
 
+    // Effects
+    public boolean effectVisuals;
+    public boolean effectSounds;
+
     public BurningDaylightConfig(FileConfiguration config) {
         loadConfigValues(config);
     }
@@ -95,6 +99,10 @@ public class BurningDaylightConfig {
         // enabled worlds
         List<String> loadedEnabledWorlds = config.getStringList("enabled_worlds");
         enabledWorlds = new HashSet<>(loadedEnabledWorlds);
+
+        // effects
+        effectVisuals = config.getBoolean("effects.visuals", true);
+        effectSounds = config.getBoolean("effects.sounds", true);
 
         // Messages
         joinMessage = config.getString("messages.join", """
