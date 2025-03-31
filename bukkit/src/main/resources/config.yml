@@ -66,6 +66,11 @@ enabled_worlds:
 # Apply damage in the End
 # - world_the_end
 
+# Visual and Sound Effects Settings
+effects:
+  visuals: true  # Enable or disable visual effects (e.g., fire particles)
+  sounds: true   # Enable or disable sound effects (e.g., burning sounds)
+
 # More intensive logging
 logging:
   enabled: false        # Enable plugin logging

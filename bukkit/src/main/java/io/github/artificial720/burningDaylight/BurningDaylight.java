@@ -226,8 +226,12 @@ public final class BurningDaylight extends JavaPlugin implements Listener {
             // prevent screen shake when not applying any damage
             player.damage(damage);
         }
-        player.getWorld().playEffect(player.getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
-        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1f);
+        if (config.effectVisuals) {
+            player.getWorld().playEffect(player.getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
+        }
+        if (config.effectSounds) {
+            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1f);
+        }
     }
 
     private double calculateBurnDamage(Player player) {
